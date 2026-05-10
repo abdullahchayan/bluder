@@ -154,7 +154,7 @@
 # BLOK 3 — Redirect HTTP → HTTPS
 # ──────────────────────────────────────────────────────────
 [[redirects]]
-  from   = "http://bluderkresnaa.netlify.app/*"
+  from   = "http://bluderkresna.netlify.app/*"
   to     = "https://bluderkresnaa.netlify.app/:splat"
   status = 301
   force  = true
