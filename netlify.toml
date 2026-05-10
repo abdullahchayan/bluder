@@ -190,8 +190,8 @@
 # jika setting Netlify Force HTTPS dimatikan.
 # ──────────────────────────────────────────────────────────
 [[redirects]]
-  from   = "http://bluderkresna.netlify.app/*"
-  to     = "https://bluderkresna.netlify.app/:splat"
+  from   = "http://bluderkresnaa.netlify.app/*"
+  to     = "https://bluderkresnaa.netlify.app/:splat"
   status = 301
   force  = true
 
