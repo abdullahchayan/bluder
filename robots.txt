@@ -13,7 +13,7 @@ Disallow: /index.html
 Disallow: /*.toml$
 
 # Sitemap
-Sitemap: https://bluderkresna.netlify.app/sitemap.xml
+Sitemap: https://bluderkresnaa.netlify.app/sitemap.xml
 
 # ── Crawl-delay untuk bot agresif ──────────────────────────
 User-agent: AhrefsBot
