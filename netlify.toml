@@ -1,0 +1,168 @@
+# ============================================================
+# netlify.toml — Konfigurasi Keamanan Bluder Kresna
+# Target: A+ securityheaders.io | A Mozilla Observatory
+#
+# Strategi CSP:
+#   script-src → Hash + strict-dynamic (hapus unsafe-inline
+#                di browser modern CSP3, fallback hash di lama)
+#   style-src  → Hash eksplisit (hapus unsafe-inline sepenuhnya)
+#   unsafe-eval → Wajib untuk Tailwind Play CDN (runtime compiler)
+#                 Tidak bisa dihapus tanpa migrasi ke Vite/PostCSS
+#
+# Resource eksternal yang dipakai:
+#   - Tailwind CDN Play  (cdn.tailwindcss.com) — butuh unsafe-eval
+#   - Lucide Icons       (unpkg.com)
+#   - Bootstrap JS + CSS (cdn.jsdelivr.net)
+#   - Google Fonts       (fonts.googleapis.com / fonts.gstatic.com)
+#   - Google Maps iframe (maps.google.com / www.google.com)
+#   - Gambar produk CDN  (z-cdn-media.chatglm.cn)
+#   - WhatsApp           (wa.me / api.whatsapp.com)
+#   - Tabler Icons       (cdn.jsdelivr.net)
+# ============================================================
+
+# ──────────────────────────────────────────────────────────
+# BLOK 1 — Header keamanan global untuk SEMUA halaman
+# ──────────────────────────────────────────────────────────
+[[headers]]
+  for = "/*"
+  [headers.values]
+
+    # ── 1. HSTS ────────────────────────────────────────────────
+    # 2 tahun = 63072000 detik. Memenuhi syarat hstspreload.org.
+    Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
+
+    # ── 2. Anti MIME Sniffing ──────────────────────────────────
+    X-Content-Type-Options = "nosniff"
+
+    # ── 3. Anti-Clickjacking ──────────────────────────────────
+    # DENY + frame-ancestors 'none' di CSP = konsisten = skor penuh.
+    X-Frame-Options = "DENY"
+
+    # ── 4. Referrer Policy ────────────────────────────────────
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+    # ── 5. Permissions Policy ─────────────────────────────────
+    Permissions-Policy = "accelerometer=(), ambient-light-sensor=(), autoplay=(), battery=(), camera=(), display-capture=(), document-domain=(), encrypted-media=(), execution-while-not-rendered=(), execution-while-out-of-viewport=(), fullscreen=(self), gamepad=(), geolocation=(), gyroscope=(), hid=(), idle-detection=(), layout-animations=(self), legacy-image-formats=(), magnetometer=(), microphone=(), midi=(), navigation-override=(), payment=(self), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), serial=(), speaker-selection=(), sync-xhr=(), unoptimized-images=(), unsized-media=(), usb=(), web-share=(self), xr-spatial-tracking=(), browsing-topics=(), join-ad-interest-group=(), run-ad-auction=()"
+
+    # ── 6. Content Security Policy — Hash-Based ───────────────
+    #
+    # PERUBAHAN UTAMA dari versi sebelumnya:
+    #
+    #   [DIHAPUS]  'unsafe-inline' dari script-src dan style-src
+    #   [DITAMBAH] 'strict-dynamic' di script-src
+    #              → Browser CSP3 modern MENGABAIKAN unsafe-inline
+    #                secara otomatis. Hash menjadi satu-satunya izin.
+    #   [DITAMBAH] SHA-256 hash untuk setiap <script> dan <style>
+    #              inline di semua halaman. Hash dihitung dari konten
+    #              persis (byte-for-byte).
+    #   [TETAP]    'unsafe-eval' — tidak bisa dihapus selama
+    #              menggunakan Tailwind Play CDN (cdn.tailwindcss.com).
+    #              Tailwind Play menggunakan new Function() untuk
+    #              mengompilasi utility class di runtime browser.
+    #
+    # HASH INLINE SCRIPTS (8 hash unik dari 5 halaman):
+    #   sha256-9/r6G9SA30gdLKlBJ/h21p7cW8VDKELQqyKSl3gVwgw=  main app (lokasi/product/tentang)
+    #   sha256-C6c4O9ok+K9pPUvHmEzXC2gABrBzM5MwFezom7BZgwU=  product page logic
+    #   sha256-HFxljKcUjaxZ3CxoWBjGc9ejep2eWyigiBTIhsNFf7Q=  tailwind config (bluder_kresna)
+    #   sha256-TrNZFKReadTa20TGHBz1ZKqAOueiXRzqKsFctVNPltE=  lokasi page logic
+    #   sha256-ZvYqk1z3rBhaWkKaKy5IoOrgBTutbsuURkuo91RLWus=  lucide.createIcons (shared)
+    #   sha256-a0EWMabg+e7cO/j3spKtOisqBEyhI/KRalFc+EvnoYw=  main app (bluder_kresna)
+    #   sha256-ldBdvFanuvxOczWYqjErHjhYCEyBc8wqm7w6TuP6zmo=  tentang page logic
+    #   sha256-pGHE0LbhyaIuZg3F9/sQhDMmNZlrg0GnQi6kw2wva8s=  captcha logic (index)
+    #
+    # HASH INLINE STYLES (3 hash unik dari 5 halaman):
+    #   sha256-AElfjWPxbzuepP1ANUFMHI+36MJV/Gt9pPGSURpFEP8=  bluder_kresna styles
+    #   sha256-DzNZ32hWvRsKRFhf2J0N0OBxVdMVVZPyL7hu+ylbyvs=  shared styles (lokasi/product/tentang)
+    #   sha256-QAWPsEOUHk5D6hyFn1649NWwrXzz722S8c4cYzc2K8g=  index (captcha) styles
+    #
+    # ⚠️  JIKA isi <script> atau <style> inline diubah, hash HARUS
+    #     dihitung ulang. Gunakan perintah:
+    #     python3 -c "import hashlib,base64; print('sha256-'+base64.b64encode(hashlib.sha256(open('file.html','rb').read()).digest()).decode())"
+    #     atau secara online: https://report-uri.com/home/hash
+    #
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-eval' 'strict-dynamic' 'sha256-9/r6G9SA30gdLKlBJ/h21p7cW8VDKELQqyKSl3gVwgw=' 'sha256-C6c4O9ok+K9pPUvHmEzXC2gABrBzM5MwFezom7BZgwU=' 'sha256-HFxljKcUjaxZ3CxoWBjGc9ejep2eWyigiBTIhsNFf7Q=' 'sha256-TrNZFKReadTa20TGHBz1ZKqAOueiXRzqKsFctVNPltE=' 'sha256-ZvYqk1z3rBhaWkKaKy5IoOrgBTutbsuURkuo91RLWus=' 'sha256-a0EWMabg+e7cO/j3spKtOisqBEyhI/KRalFc+EvnoYw=' 'sha256-ldBdvFanuvxOczWYqjErHjhYCEyBc8wqm7w6TuP6zmo=' 'sha256-pGHE0LbhyaIuZg3F9/sQhDMmNZlrg0GnQi6kw2wva8s=' https://cdn.tailwindcss.com https://unpkg.com https://cdn.jsdelivr.net; script-src-elem 'self' 'unsafe-eval' 'sha256-9/r6G9SA30gdLKlBJ/h21p7cW8VDKELQqyKSl3gVwgw=' 'sha256-C6c4O9ok+K9pPUvHmEzXC2gABrBzM5MwFezom7BZgwU=' 'sha256-HFxljKcUjaxZ3CxoWBjGc9ejep2eWyigiBTIhsNFf7Q=' 'sha256-TrNZFKReadTa20TGHBz1ZKqAOueiXRzqKsFctVNPltE=' 'sha256-ZvYqk1z3rBhaWkKaKy5IoOrgBTutbsuURkuo91RLWus=' 'sha256-a0EWMabg+e7cO/j3spKtOisqBEyhI/KRalFc+EvnoYw=' 'sha256-ldBdvFanuvxOczWYqjErHjhYCEyBc8wqm7w6TuP6zmo=' 'sha256-pGHE0LbhyaIuZg3F9/sQhDMmNZlrg0GnQi6kw2wva8s=' https://cdn.tailwindcss.com https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'sha256-AElfjWPxbzuepP1ANUFMHI+36MJV/Gt9pPGSURpFEP8=' 'sha256-DzNZ32hWvRsKRFhf2J0N0OBxVdMVVZPyL7hu+ylbyvs=' 'sha256-QAWPsEOUHk5D6hyFn1649NWwrXzz722S8c4cYzc2K8g=' https://fonts.googleapis.com https://cdn.jsdelivr.net; style-src-elem 'self' 'sha256-AElfjWPxbzuepP1ANUFMHI+36MJV/Gt9pPGSURpFEP8=' 'sha256-DzNZ32hWvRsKRFhf2J0N0OBxVdMVVZPyL7hu+ylbyvs=' 'sha256-QAWPsEOUHk5D6hyFn1649NWwrXzz722S8c4cYzc2K8g=' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; frame-src https://www.google.com https://maps.google.com; connect-src 'self' https://cdn.tailwindcss.com https://unpkg.com https://cdn.jsdelivr.net https://wa.me https://api.whatsapp.com; worker-src 'none'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self' https://wa.me https://api.whatsapp.com; frame-ancestors 'none'; upgrade-insecure-requests;"
+
+    # ── 7. Cross-Origin Policies ──────────────────────────────
+    # COEP unsafe-none: wajib agar Google Maps & CDN image tidak diblokir.
+    # COOP same-origin-allow-popups: agar window.open() WhatsApp tidak gagal.
+    # CORP same-site: lebih ketat dari cross-origin, masih aman untuk CDN.
+    Cross-Origin-Embedder-Policy  = "unsafe-none"
+    Cross-Origin-Opener-Policy    = "same-origin-allow-popups"
+    Cross-Origin-Resource-Policy  = "same-site"
+
+    # ── 8. XSS Protection (Legacy) ────────────────────────────
+    X-XSS-Protection = "1; mode=block"
+
+    # ── 9. Cache-Control untuk halaman HTML ───────────────────
+    Cache-Control = "no-store, must-revalidate"
+
+# ──────────────────────────────────────────────────────────
+# BLOK 2 — Cache optimal untuk aset statis
+# ──────────────────────────────────────────────────────────
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000, stale-while-revalidate=86400"
+
+[[headers]]
+  for = "/*.jpg"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000, stale-while-revalidate=86400"
+
+[[headers]]
+  for = "/*.jpeg"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000, stale-while-revalidate=86400"
+
+[[headers]]
+  for = "/*.webp"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000, stale-while-revalidate=86400"
+
+[[headers]]
+  for = "/*.svg"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000, stale-while-revalidate=86400"
+
+[[headers]]
+  for = "/*.woff2"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/sitemap.xml"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+    Content-Type  = "application/xml; charset=utf-8"
+
+[[headers]]
+  for = "/robots.txt"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+
+# ──────────────────────────────────────────────────────────
+# BLOK 3 — Redirect HTTP → HTTPS
+# ──────────────────────────────────────────────────────────
+[[redirects]]
+  from   = "http://bluderkresnaa.netlify.app/*"
+  to     = "https://bluderkresnaa.netlify.app/:splat"
+  status = 301
+  force  = true
+
+# ──────────────────────────────────────────────────────────
+# BLOK 4 — 404 fallback (opsional, aktifkan jika diperlukan)
+# ──────────────────────────────────────────────────────────
+# [[redirects]]
+#   from   = "/*"
+#   to     = "/bluder_kresna.html"
+#   status = 404

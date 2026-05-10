@@ -1,0 +1,26 @@
+# ============================================================
+# robots.txt — Bluder Kresna
+# https://bluderkresna.netlify.app
+# ============================================================
+
+User-agent: *
+Allow: /
+
+# Halaman CAPTCHA — jangan diindeks
+Disallow: /index.html
+
+# Aset statis tidak perlu dirayapi
+Disallow: /*.toml$
+
+# Sitemap
+Sitemap: https://bluderkresna.netlify.app/sitemap.xml
+
+# ── Crawl-delay untuk bot agresif ──────────────────────────
+User-agent: AhrefsBot
+Crawl-delay: 10
+
+User-agent: SemrushBot
+Crawl-delay: 10
+
+User-agent: MJ12bot
+Disallow: /

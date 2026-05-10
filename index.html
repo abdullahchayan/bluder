@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bluder Kresna Madiun – Verifikasi Masuk</title>
+  <meta name="description" content="Masuk ke halaman resmi Bluder Kresna – produsen bluder khas Madiun terlezat, halal bersertifikat MUI.">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#1D9E75">
+  <link rel="canonical" href="https://bluderkresna.netlify.app/">
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Bluder Kresna">
+  <meta property="og:title" content="Bluder Kresna Madiun | Oleh-oleh Khas Madiun Terlezat">
+  <meta property="og:description" content="Bluder khas Madiun paling legendaris. Halal MUI, fresh oven setiap hari. Varian Original, Kismis, Keju, Coklat.">
+  <meta property="og:url" content="https://bluderkresna.netlify.app/">
+  <meta property="og:image" content="https://z-cdn-media.chatglm.cn/files/9a0d63a9-abc8-4394-bff0-98cc4ff00f4b.jpeg?auth_key=1875381293-8144e69d1ffb403b9a76581f15ff9160-0-d39e1c118cf78b14bc32e99432e3de4c">
+  <meta property="og:locale" content="id_ID">
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Bluder Kresna Madiun | Oleh-oleh Khas Madiun Terlezat">
+  <meta name="twitter:description" content="Bluder khas Madiun paling legendaris. Halal MUI, fresh oven. Pesan via WhatsApp!">
+  <!-- GEO -->
+  <meta name="geo.region" content="ID-JI">
+  <meta name="geo.placename" content="Madiun, Jawa Timur, Indonesia">
+  <meta name="geo.position" content="-7.6298;111.5230">
+  <meta name="ICBM" content="-7.6298, 111.5230">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: #f4f4f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      background: #fff;
+      border: 0.5px solid #ddd;
+      border-radius: 14px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+    }
+
+    .card-title {
+      font-size: 22px;
+      font-weight: 500;
+      color: #1a1a1a;
+      margin-bottom: 6px;
+    }
+
+    .card-sub {
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 2rem;
+    }
+
+    .captcha-box {
+      border: 0.5px solid #ccc;
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      cursor: pointer;
+      transition: background 0.15s;
+      user-select: none;
+    }
+
+    .captcha-box:hover { background: #f7f7f5; }
+
+    .captcha-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .check-area {
+      width: 24px;
+      height: 24px;
+      border: 2px solid #bbb;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .check-area.checked {
+      background: #1D9E75;
+      border-color: #1D9E75;
+    }
+
+    .check-area .tick {
+      opacity: 0;
+      transform: scale(0.4) rotate(-10deg);
+      transition: opacity 0.2s, transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+    .check-area.checked .tick {
+      opacity: 1;
+      transform: scale(1) rotate(0deg);
+    }
+
+    .captcha-label {
+      font-size: 14px;
+      color: #1a1a1a;
+    }
+
+    .captcha-logo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .captcha-logo i {
+      font-size: 20px;
+      color: #1D9E75;
+    }
+
+    .logo-text {
+      font-size: 10px;
+      color: #aaa;
+      letter-spacing: 0.04em;
+    }
+
+    .btn-masuk {
+      width: 100%;
+      padding: 11px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, transform 0.1s;
+      border: none;
+    }
+
+    .btn-masuk.off {
+      background: #eee;
+      color: #aaa;
+      cursor: not-allowed;
+    }
+
+    .btn-masuk.on {
+      background: #1D9E75;
+      color: #fff;
+    }
+
+    .btn-masuk.on:hover { background: #0F6E56; }
+    .btn-masuk.on:active { transform: scale(0.98); }
+
+    .status-msg {
+      text-align: center;
+      font-size: 13px;
+      margin-top: 12px;
+      min-height: 18px;
+      color: #888;
+    }
+
+    .spinner {
+      display: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: auto;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .success-msg {
+      display: none;
+      text-align: center;
+      padding-top: 1rem;
+    }
+
+    .success-msg i {
+      font-size: 32px;
+      color: #1D9E75;
+    }
+
+    .success-msg p {
+      font-size: 14px;
+      color: #888;
+      margin-top: 6px;
+    }
+
+    @keyframes wave {
+      0%   { transform: scale(1); }
+      30%  { transform: scale(0.9); }
+      60%  { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+
+    .wave { animation: wave 0.5s ease forwards; }
+  </style>
+</head>
+<body>
+
+  <div class="card" id="mainCard">
+    <p class="card-title">Masuk ke akun</p>
+    <p class="card-sub">Selesaikan verifikasi untuk melanjutkan.</p>
+
+    <div class="captcha-box" id="captchaBox" onclick="toggleCheck()" role="checkbox" aria-checked="false" tabindex="0">
+      <div class="captcha-left">
+        <div class="check-area" id="checkArea">
+          <svg class="tick" width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M2 7L5.5 10.5L12 3.5" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="captcha-label">Saya bukan robot</span>
+      </div>
+      <div class="captcha-logo">
+        <i class="ti ti-shield-check"></i>
+        <span class="logo-text">CAPTCHA</span>
+      </div>
+    </div>
+
+    <button class="btn-masuk off" id="btnMasuk" disabled onclick="doLogin()">Masuk</button>
+    <div class="status-msg" id="statusMsg">Centang kotak di atas untuk melanjutkan.</div>
+
+    <div class="success-msg" id="successMsg">
+      <i class="ti ti-circle-check"></i>
+      <p>Verifikasi berhasil! Anda diarahkan...</p>
+    </div>
+  </div>
+
+  <script>
+    var checked = false;
+    var loading = false;
+
+    function toggleCheck() {
+      if (loading) return;
+      checked = !checked;
+      var ca = document.getElementById('checkArea');
+      var btn = document.getElementById('btnMasuk');
+      var box = document.getElementById('captchaBox');
+      var msg = document.getElementById('statusMsg');
+
+      ca.classList.toggle('checked', checked);
+      box.setAttribute('aria-checked', checked.toString());
+
+      if (checked) {
+        ca.classList.add('wave');
+        setTimeout(function () { ca.classList.remove('wave'); }, 500);
+        btn.classList.remove('off');
+        btn.classList.add('on');
+        btn.disabled = false;
+        msg.textContent = 'Verifikasi selesai. Silakan tekan Masuk.';
+        msg.style.color = '#1D9E75';
+      } else {
+        btn.classList.remove('on');
+        btn.classList.add('off');
+        btn.disabled = true;
+        msg.textContent = 'Centang kotak di atas untuk melanjutkan.';
+        msg.style.color = '';
+      }
+    }
+
+    document.getElementById('captchaBox').addEventListener('keydown', function (e) {
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        toggleCheck();
+      }
+    });
+
+    function doLogin() {
+      if (!checked || loading) return;
+      loading = true;
+      var btn = document.getElementById('btnMasuk');
+      var msg = document.getElementById('statusMsg');
+      btn.innerHTML = '<div class="spinner" style="display:block;"></div>';
+      btn.disabled = true;
+      msg.textContent = 'Sedang memproses...';
+      msg.style.color = '';
+
+      setTimeout(function () {
+        document.getElementById('captchaBox').style.display = 'none';
+        btn.style.display = 'none';
+        msg.style.display = 'none';
+        document.getElementById('successMsg').style.display = 'block';
+        window.location.href = 'bluder_kresna.html';
+      }, 1800);
+    }
+  </script>
+
+</body>
+</html>
