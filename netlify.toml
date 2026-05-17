@@ -1,204 +1,124 @@
 # ============================================================
-# netlify.toml — Konfigurasi Keamanan Bluder Kresna
-# Target: A+ di securityheaders.io & Mozilla Observatory
-#
-# Resource eksternal yang dipakai website:
-#   - Tailwind CDN (cdn.tailwindcss.com)
-#   - Lucide Icons (unpkg.com)
-#   - Bootstrap JS + CSS (cdn.jsdelivr.net)
-#   - Google Fonts (fonts.googleapis.com / fonts.gstatic.com)
-#   - Google Maps iframe (maps.google.com / www.google.com)
-#   - Gambar produk CDN pihak ketiga (z-cdn-media.chatglm.cn)
-#   - WhatsApp link (wa.me)
-#   - Tabler Icons (cdn.jsdelivr.net)
+# netlify.toml — Konfigurasi Keamanan & Performa Bluder Kresna
+# Versi: 2.0 (Disempurnakan)
 # ============================================================
 
-# ──────────────────────────────────────────────────────────
-# BLOK 1 — Header keamanan global untuk SEMUA halaman
-# ──────────────────────────────────────────────────────────
+# ── Build Settings ──────────────────────────────────────────
+[build]
+  publish = "."
+
+# ── Redirect: root → bluder_kresna.html ─────────────────────
+# Halaman index.html (CAPTCHA) tetap sebagai entry point.
+# Jika seseorang akses domain langsung, diarahkan ke index.
+[[redirects]]
+  from = "/"
+  to   = "/index.html"
+  status = 200
+
+# ── Global Security Headers ─────────────────────────────────
 [[headers]]
   for = "/*"
   [headers.values]
 
-    # ── 1. HSTS ────────────────────────────────────────────────
-    # Memaksa HTTPS selama 2 tahun (standar preload minimum 1 thn).
-    # 'preload' = domain masuk daftar HSTS global di semua browser.
-    # Nilai max-age dinaikkan ke 63072000 (2 tahun) agar lolos
-    # verifikasi hstspreload.org yang mensyaratkan ≥ 1 tahun.
-    Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
+    # 1. HSTS — paksa HTTPS selama 1 tahun
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
 
-    # ── 2. Anti MIME Sniffing ──────────────────────────────────
-    # Mencegah browser menebak tipe file — wajib untuk A+.
+    # 2. Anti MIME Sniffing
     X-Content-Type-Options = "nosniff"
 
-    # ── 3. Anti-Clickjacking ──────────────────────────────────
-    # DISELARASKAN dengan frame-ancestors di CSP (keduanya 'none').
-    # Google Maps diembed via <iframe> di dalam halaman kita sendiri
-    # — itu BUKAN frame-ancestors (kita yang meload Maps, bukan
-    # sebaliknya), jadi DENY aman dipakai di sini.
-    # securityheaders.io memberi poin penuh jika CSP frame-ancestors
-    # dan X-Frame-Options konsisten (keduanya melarang embedding).
-    X-Frame-Options = "DENY"
+    # 3. Anti-Clickjacking (SAMEORIGIN agar Google Maps embed bisa jalan)
+    X-Frame-Options = "SAMEORIGIN"
 
-    # ── 4. Referrer Policy ────────────────────────────────────
-    # Hanya kirim origin (bukan path) ke situs HTTPS lain.
-    # Tidak ada path/query yang bocor ke CDN atau WhatsApp.
+    # 4. Referrer Policy
     Referrer-Policy = "strict-origin-when-cross-origin"
 
-    # ── 5. Permissions Policy ─────────────────────────────────
-    # Sintaks MODERN (bukan fitur=() lagi, tapi fitur=()).
-    # Menonaktifkan semua API hardware sensitif.
-    # 'payment=(self)' dipertahankan untuk proses checkout via WA.
-    # 'geolocation' dinonaktifkan — kita pakai embed Maps statis,
-    # bukan Geolocation API browser.
-    # Menambahkan direktif baru yang kini diverifikasi:
-    #   browsing-topics, join-ad-interest-group, run-ad-auction
-    #   (pengganti interest-cohort yang sudah deprecated)
-    Permissions-Policy = "accelerometer=(), ambient-light-sensor=(), autoplay=(), battery=(), camera=(), display-capture=(), document-domain=(), encrypted-media=(), execution-while-not-rendered=(), execution-while-out-of-viewport=(), fullscreen=(self), gamepad=(), geolocation=(), gyroscope=(), hid=(), idle-detection=(), layout-animations=(self), legacy-image-formats=(), magnetometer=(), microphone=(), midi=(), navigation-override=(), payment=(self), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), serial=(), speaker-selection=(), sync-xhr=(), unoptimized-images=(), unsized-media=(), usb=(), web-share=(self), xr-spatial-tracking=(), browsing-topics=(), join-ad-interest-group=(), run-ad-auction=()"
+    # 5. Permissions Policy — matikan semua fitur sensitif
+    Permissions-Policy = "accelerometer=(), camera=(), display-capture=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(self), usb=(), interest-cohort=()"
 
-    # ── 6. Content Security Policy (CSP) ──────────────────────
-    # PENYEMPURNAAN dari versi sebelumnya:
-    #
-    #  script-src:
-    #    → Ditambahkan 'strict-dynamic' TIDAK dipakai karena
-    #      bertentangan dengan 'unsafe-inline' pada browser lama.
-    #    → Semua CDN yang benar-benar dipakai dicantumkan eksplisit.
-    #
-    #  style-src:
-    #    → Ditambahkan https://fonts.googleapis.com untuk @import font.
-    #
-    #  img-src:
-    #    → Ditambahkan domain CDN gambar produk secara eksplisit
-    #      (z-cdn-media.chatglm.cn) sebagai lapisan tambahan
-    #      di samping wildcard https:.
-    #
-    #  connect-src:
-    #    → Ditambahkan semua CDN karena Tailwind Play CDN melakukan
-    #      fetch internal ke cdn.tailwindcss.com saat runtime.
-    #      Tanpa ini, Tailwind bisa gagal di beberapa browser strict.
-    #
-    #  worker-src:
-    #    → Diset 'none' karena tidak ada Service Worker / Web Worker.
-    #
-    #  manifest-src:
-    #    → Diset 'self' untuk mendukung PWA manifest di masa depan.
-    #
-    #  frame-ancestors 'none':
-    #    → SELARAS dengan X-Frame-Options DENY di atas.
-    #      Ini yang paling penting untuk skor A+ — harus konsisten.
-    #
-    #  script-src-elem & style-src-elem:
-    #    → Direktif turunan yang lebih granular. Beberapa scanner
-    #      modern (Probely, ImmuniWeb) memeriksa ini secara terpisah.
-    #
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://unpkg.com https://cdn.jsdelivr.net; script-src-elem 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https: https://z-cdn-media.chatglm.cn; frame-src https://www.google.com https://maps.google.com; connect-src 'self' https://cdn.tailwindcss.com https://unpkg.com https://cdn.jsdelivr.net https://wa.me; worker-src 'none'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self' https://wa.me https://api.whatsapp.com; frame-ancestors 'none'; upgrade-insecure-requests;"
+    # 6. Content Security Policy
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; frame-src https://www.google.com https://maps.google.com; connect-src 'self' https://wa.me; object-src 'none'; base-uri 'self'; form-action 'self' https://wa.me; frame-ancestors 'none'; upgrade-insecure-requests;"
 
-    # ── 7. Cross-Origin Policies ──────────────────────────────
-    #
-    # Cross-Origin-Embedder-Policy:
-    #   Tetap 'unsafe-none' karena Google Maps iframe dan gambar CDN
-    #   lintas-origin tidak mengirim CORP header — jika diset ke
-    #   'require-corp' atau 'credentialless', Maps akan diblokir.
-    #   Ini trade-off yang diperlukan untuk website konten publik.
-    #
-    # Cross-Origin-Opener-Policy:
-    #   'same-origin-allow-popups' dipilih menggantikan 'same-origin'
-    #   murni karena WhatsApp dibuka via window.open() — dengan
-    #   'same-origin' murni, popup bisa kehilangan referensi ke
-    #   window opener dan gagal di beberapa browser.
-    #
-    # Cross-Origin-Resource-Policy:
-    #   'same-site' lebih ketat dari 'cross-origin' — melindungi
-    #   resource kita dari di-load oleh domain lain, tapi masih
-    #   mengizinkan subdomain Netlify yang sama.
-    #   CATATAN: jika ada CDN yang me-mirror file Anda, ganti ke
-    #   'cross-origin'. Untuk website ini 'same-site' sudah cukup.
+    # 7. Cross-Origin Policies
     Cross-Origin-Embedder-Policy  = "unsafe-none"
-    Cross-Origin-Opener-Policy    = "same-origin-allow-popups"
-    Cross-Origin-Resource-Policy  = "same-site"
+    Cross-Origin-Opener-Policy    = "same-origin"
+    Cross-Origin-Resource-Policy  = "cross-origin"
 
-    # ── 8. XSS Protection (Legacy) ────────────────────────────
-    # Untuk IE / Chrome lama. Browser modern pakai CSP.
-    # mode=block lebih aman dari mode=filter (default).
+    # 8. XSS Protection (browser lama)
     X-XSS-Protection = "1; mode=block"
 
-    # ── 9. Cache-Control (Security) ───────────────────────────
-    # Mencegah halaman HTML di-cache oleh proxy/CDN perantara.
-    # Penting untuk halaman dengan konten dinamis (keranjang, form).
-    # Aset statis (JS/CSS/img) dikecualikan di blok tersendiri.
-    Cache-Control = "no-store, must-revalidate"
+    # 9. Cache default (HTML tidak di-cache agresif)
+    Cache-Control = "public, max-age=0, must-revalidate"
 
-# ──────────────────────────────────────────────────────────
-# BLOK 2 — Cache optimal untuk aset statis
-# Override Cache-Control hanya untuk file yang tidak berubah.
-# Ini TIDAK memengaruhi header keamanan (tetap diwarisi).
-# ──────────────────────────────────────────────────────────
-[[headers]]
-  for = "/*.js"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
+# ── Cache Performa: Aset Statis ──────────────────────────────
+# CSS, JS, Gambar, Font → cache 1 tahun (immutable)
 [[headers]]
   for = "/*.css"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
-  for = "/*.png"
+  for = "/*.js"
   [headers.values]
-    Cache-Control = "public, max-age=2592000, stale-while-revalidate=86400"
-
-[[headers]]
-  for = "/*.jpg"
-  [headers.values]
-    Cache-Control = "public, max-age=2592000, stale-while-revalidate=86400"
-
-[[headers]]
-  for = "/*.jpeg"
-  [headers.values]
-    Cache-Control = "public, max-age=2592000, stale-while-revalidate=86400"
-
-[[headers]]
-  for = "/*.webp"
-  [headers.values]
-    Cache-Control = "public, max-age=2592000, stale-while-revalidate=86400"
-
-[[headers]]
-  for = "/*.svg"
-  [headers.values]
-    Cache-Control = "public, max-age=2592000, stale-while-revalidate=86400"
+    Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
   for = "/*.woff2"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+    Access-Control-Allow-Origin = "*"
 
 [[headers]]
-  for = "/sitemap.xml"
+  for = "/*.woff"
   [headers.values]
-    Cache-Control = "public, max-age=86400"
-    Content-Type  = "application/xml; charset=utf-8"
+    Cache-Control = "public, max-age=31536000, immutable"
+    Access-Control-Allow-Origin = "*"
 
 [[headers]]
-  for = "/robots.txt"
+  for = "/*.jpg"
   [headers.values]
-    Cache-Control = "public, max-age=86400"
+    Cache-Control = "public, max-age=31536000, immutable"
 
-# ──────────────────────────────────────────────────────────
-# BLOK 3 — Redirect HTTP → HTTPS (lapisan tambahan)
-# Netlify sudah otomatis, tapi ini memastikan bahkan
-# jika setting Netlify Force HTTPS dimatikan.
-# ──────────────────────────────────────────────────────────
-[[redirects]]
-  from   = "http://bluderkresnaa.netlify.app/*"
-  to     = "https://bluderkresnaa.netlify.app/:splat"
-  status = 301
-  force  = true
+[[headers]]
+  for = "/*.jpeg"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
 
-# ──────────────────────────────────────────────────────────
-# BLOK 4 — Custom 404 (opsional, baik untuk UX & SEO)
-# ──────────────────────────────────────────────────────────
-# [[redirects]]
-#   from   = "/*"
-#   to     = "/bluder_kresna.html"
-#   status = 404
+[[headers]]
+  for = "/*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.webp"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.svg"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.ico"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# ── Halaman HTML: cache pendek + revalidate ──────────────────
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=3600, must-revalidate"
+    X-Robots-Tag  = "index, follow"
+
+# ── index.html (CAPTCHA) — jangan diindex crawler ───────────
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    X-Robots-Tag  = "noindex, nofollow"
+    Cache-Control = "no-store, no-cache"
+
+# ── netlify.toml sendiri — jangan bisa diakses publik ────────
+[[headers]]
+  for = "/netlify.toml"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
