@@ -3,28 +3,37 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Bluder Kresna Madiun – Verifikasi Masuk</title>
-  <meta name="description" content="Masuk ke halaman resmi Bluder Kresna – produsen bluder khas Madiun terlezat, halal bersertifikat MUI.">
+
+  <!-- Security Headers (meta fallback) -->
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+  <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; object-src 'none'; base-uri 'self';">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+
+  <!-- SEO: noindex — ini halaman verifikasi, bukan konten publik -->
   <meta name="robots" content="noindex, nofollow">
-  <meta name="theme-color" content="#1D9E75">
-  <link rel="canonical" href="https://bluderkresna.netlify.app/">
-  <!-- Open Graph -->
+  <title>Verifikasi — Bluder Kresna Madiun</title>
+
+  <!-- Preconnect -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="https://z-cdn-media.chatglm.cn/files/1c161d46-fefb-445e-b572-5cd5bd80093e.jpeg?auth_key=1875381293-985f2f16d1764cdda90b279375f18a84-0-c1256ace1ee5f77b703546d57efc9e28">
+
+  <!-- Canonical ke halaman utama -->
+  <link rel="canonical" href="https://bluderkresnaa.netlify.app/bluder_kresna.html">
+
+  <!-- Open Graph (minimal, agar share link tetap valid) -->
   <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Bluder Kresna">
-  <meta property="og:title" content="Bluder Kresna Madiun | Oleh-oleh Khas Madiun Terlezat">
-  <meta property="og:description" content="Bluder khas Madiun paling legendaris. Halal MUI, fresh oven setiap hari. Varian Original, Kismis, Keju, Coklat.">
-  <meta property="og:url" content="https://bluderkresna.netlify.app/">
+  <meta property="og:title" content="Bluder Kresna Madiun — Roti Bluder Khas Madiun">
+  <meta property="og:description" content="Roti Bluder khas Madiun, peninggalan zaman kolonial Belanda. Halal MUI. Harga Rp9.000/pcs.">
   <meta property="og:image" content="https://z-cdn-media.chatglm.cn/files/9a0d63a9-abc8-4394-bff0-98cc4ff00f4b.jpeg?auth_key=1875381293-8144e69d1ffb403b9a76581f15ff9160-0-d39e1c118cf78b14bc32e99432e3de4c">
+  <meta property="og:url" content="https://bluderkresnaa.netlify.app/">
   <meta property="og:locale" content="id_ID">
-  <!-- Twitter -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Bluder Kresna Madiun | Oleh-oleh Khas Madiun Terlezat">
-  <meta name="twitter:description" content="Bluder khas Madiun paling legendaris. Halal MUI, fresh oven. Pesan via WhatsApp!">
-  <!-- GEO -->
-  <meta name="geo.region" content="ID-JI">
-  <meta name="geo.placename" content="Madiun, Jawa Timur, Indonesia">
-  <meta name="geo.position" content="-7.6298;111.5230">
-  <meta name="ICBM" content="-7.6298, 111.5230">
+  <meta property="og:site_name" content="Bluder Kresna Madiun">
+
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
   <style>
@@ -47,6 +56,33 @@
       width: 100%;
       max-width: 380px;
       box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+    }
+
+    .brand-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .brand-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: #aaa;
     }
 
     .card-title {
@@ -206,11 +242,43 @@
     }
 
     .wave { animation: wave 0.5s ease forwards; }
+
+    .halal-badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 1.25rem;
+      padding-top: 1rem;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    .halal-badge img {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+    }
+
+    .halal-text {
+      font-size: 11px;
+      color: #aaa;
+    }
   </style>
 </head>
 <body>
 
   <div class="card" id="mainCard">
+    <!-- Brand header -->
+    <div class="brand-header">
+      <img class="brand-logo"
+        src="https://z-cdn-media.chatglm.cn/files/1c161d46-fefb-445e-b572-5cd5bd80093e.jpeg?auth_key=1875381293-985f2f16d1764cdda90b279375f18a84-0-c1256ace1ee5f77b703546d57efc9e28"
+        alt="Logo Bluder Kresna Madiun">
+      <div>
+        <div class="brand-name">Bluder Kresna Madiun</div>
+        <div class="brand-sub">Roti Bluder Khas Madiun · Halal MUI</div>
+      </div>
+    </div>
+
     <p class="card-title">Masuk ke akun</p>
     <p class="card-sub">Selesaikan verifikasi untuk melanjutkan.</p>
 
@@ -235,6 +303,11 @@
     <div class="success-msg" id="successMsg">
       <i class="ti ti-circle-check"></i>
       <p>Verifikasi berhasil! Anda diarahkan...</p>
+    </div>
+
+    <!-- Halal badge -->
+    <div class="halal-badge">
+      <span class="halal-text">Bersertifikat Halal MUI · ID35110000675981022</span>
     </div>
   </div>
 
